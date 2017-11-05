@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 29 11:31:50 2016
-
-@author: ElkeKi
-"""
-
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
@@ -67,14 +60,24 @@ def activity(dataset,dataset_name,ensemblefile,output,figurename, swap_axes):
         activity = calc_activity(X, ensembles[i])
         fout.create_dataset('activity_ensemble_'+str(i),data=activity)
         # calc done for ensemble i
-
+        
+        params = {
+        'axes.labelsize': 50,
+        'font.size': 50,
+        'legend.fontsize': 50,
+        'xtick.labelsize': 30,
+        'ytick.labelsize': 30,
+        "text.usetex": False
+        }
+        plt.rcParams.update(params)
+    
         if np.max(activity) > 0:                  
             f = plt.figure()
             a = f.add_axes((.03,.2,.7,.35))
             a.plot(activity)
             a.set_xlim(0,X.shape[1])
             numb = i+1
-            a.set_title("pattern %d" % numb)
+            a.set_title("motif %d" % numb)
             a.set_xlabel("frame")
             a.set_ylabel("activity")
             f.savefig(figurename+str(i)+'.png', bbox_inches='tight')

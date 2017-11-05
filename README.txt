@@ -1,8 +1,11 @@
 --------------------------------------------------------------------------------------------------------------------
     Sparse Convolutional Coding Neuronal Ensemble Learner
+
+    Based on:
+	S. Peter and E. Kirschbaum et al.: ‚Sparse convolutional coding for neuronal assembly detection‘, NIPS 2017 (in press), 2017.
     
-    This algorithm learns neuronal ensembles from a spike matrix Y of the form Y = (n_neurons, n_frames)
-    Further options provide the sorting of the found ensembles and the elimination of spurious motifs by using a non-parametric threshold estimation. 
+    This algorithm learns motifs in a neuronal spike matrix Y of the form Y = (n_neurons, n_frames)
+    Further options provide the sorting of the found ensembles and the elimination of spurious motifs by non-parametric threshold estimation. 
     
 This program is written for Python 3.
 However, it is possible to use it also with Python 2.7. 
@@ -17,7 +20,7 @@ pip install matplotlib
 pip install scikit-learn
 pip install future (in case Python 2.7 is used)
 
-Contact us for further questions, bug reports and other recommendations and feedback.
+Contact elke.kirschbaum@iwr.uni-heidelberg.de for further questions, bug reports and other recommendations and feedback.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -27,8 +30,12 @@ Contact us for further questions, bug reports and other recommendations and feed
     0. Create a *.h5 File containing your neuronal data.
        (the sheet within the file should be named 'spikes')
     1. Navigate in the command line to the neuronal_ensemble_learner directory 
-    2. Enter '>> python ./Code/main.py -d dataset -f folder'
+
+    2. Enter '>> python Code/main.py -d dataset -f folder'
     The code will start learning the ensembles from the file 'dataset.h5' with the default settings for the parameters. A folder 'folder' is created in the directory where 'dataset.h5' is located where you can find the results.
+
+    or:
+    Edit and execute Code/run.py
     
     
     Parameters
@@ -40,20 +47,20 @@ Contact us for further questions, bug reports and other recommendations and feed
     
     folder (-f)        : name of the output folder. This folder is created in the directory where the dataset is located.  
     
+    quiet (-q)         : add -q if no pictures should be generated (default: None)
+    
         
     Optional parameters for learning
     ------------
     
-    quiet (-q)         : add -q if no pictures should be generated (default: None)
-    
-    swap_axes (-swap)      : if entered, the input matrix from the *.h5 file is transposed - necessary if the input matrix has the shape n_frames x n_neurons instead of the required n_neurons x n_frames
-                             
+    swap_axes (-swap)      : if entered, the input matrix from the *.h5 file is transposed - neccessary if the input matrix has the shape n_frames x n_neurons instead of the required n_neurons x n_frames
+                             You can check if your input matrix has the correct shape by starting the method. In the output line "building lgs for neuron: " the number of neurons should be counted through. If here the number of frames you have is shown, you have to use the swap-axes option to perform the analysis correctly.
     
     ensembles (-e)         : max number of ensembles to be found (default: -e 10)
     
     iterations (-i)        : number of iterations in each initialization (default: -i 10)
 
-    length (-l)            : max length of an ensemble (default: -l 10)
+    length (-l)            : max length of ensembles (default: -l 10)
 
     ensemble-penalty (-ep) : weight on the l1 norm of the motifs, the bigger this number, the sparser the learned motifs will get (default: -ep 0.0001)
 
@@ -71,7 +78,7 @@ Contact us for further questions, bug reports and other recommendations and feed
     Optional parameters for sorting
     ------------
     
-    initializations (-init) : number of random initializations, for each trail the same set of parameters is used. If '-init 1' the sorting and non-parametric threshold estimation are not performed (default: '-init 5')
+    initializations (-init) : number of random initializations, for each trail the same set of parameters is used. If '-init 1' the sorting and non-parametric significance tests are not performed (default: '-init 5')
     
     only_sort (-only_sort)  : in case the ensembles have already been learned and only the sorting shall be performed (default: None) 
                             (NOTE: the parameter '-f folder' hereby denotes the name of the folder that contains the already learned ensembles,
@@ -91,7 +98,7 @@ Contact us for further questions, bug reports and other recommendations and feed
     
     output  : (if initializations > 1) saves motifs from the shuffled matrix after sorting in folder/Ensembles_random_sorted 
 
-    output  : (if initializations > 1) saves motifs repeatedly appearing in different runs and their activity in folder/Final_Motifs
+    output  : (if initializations > 1) saves motifs after the non-parametric tests in folder/Final_Motifs
 
     output  : (if initializations > 1) saves the shuffled spike matrix created from 'dataset.h5' in the file 'dataset_random.h5'
 
@@ -121,7 +128,7 @@ Ensembles_random_sorted:
     *.png picture for each file
 
 Final_Motifs:  
-	final_motifs.h5  : this file contains the final motifs after the motifs that appeared in different runs in one sheet
+	final_motif.h5  : this file contains the final motifs after the non-parametric significance tests in one sheet
                and in a group called 'candidates' one finds all the remaining representatives of each ensemble, from which the final motifs were computed by taking the minimal spike values
 	activities.h5   : temporal occurrence of each motif in the original data 
 	Evaluation.txt  : a file with all parameters

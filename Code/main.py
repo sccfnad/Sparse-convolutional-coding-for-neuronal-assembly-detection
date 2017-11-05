@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul  7 12:58:16 2016
-
-@author: fbachman
-"""
 from __future__ import print_function, absolute_import, division, unicode_literals
 
 import argparse
@@ -38,17 +32,19 @@ if __name__ == "__main__":
         
     dataset (-d)       : the original *.h5 file (Note: add -dn dataset_name if the sheet is not named "spikes")
     
-    dataset_name (-dn) : sheet of matrix (default: "spikes")
+    dataset_name (-dn) : sheet of matrix (Default: "spikes")
     
     folder (-f)        : name of the output folder. This folder is created in the directory where the dataset is located.  
     
-    quiet (-q)         : add -q if no pictures should be generated (default: None)
     
         
     Optional parameters for learning
     ------------
     
-    swap_axes (-swap)      : if entered, the input matrix from the *.h5 file is transposed
+    quiet (-q)         : add -q if no pictures should be generated (default: None)
+    
+    swap_axes (-swap)      : if entered, the input matrix from the *.h5 file is transposed - neccessary if the input matrix has the shape n_frames x n_neurons instead of the required n_neurons x n_frames
+                             You can check if your input matrix has the correct shape by starting the method. In the output line "building lgs for neuron: " the number of neurons should be counted through. If here the number of frames you have is shown, you have to use the swap-axes option to perform the analysis correctly.
     
     ensembles (-e)         : max number of ensembles to be found (default: -e 10)
     
@@ -56,26 +52,27 @@ if __name__ == "__main__":
 
     length (-l)            : max length of ensembles (default: -l 10)
 
-    ensemble-penalty (-ep) : list of [number of iterations:ensemble coefficient] (default: -ep 10:0.0001,10:0.0005,-1:0.001)
+    ensemble-penalty (-ep) : weight on the l1 norm of the motifs, the bigger this number, the sparser the learned motifs will get (default: -ep 0.0001)
 
-    start (-start)         : frame number from which the analysis is started, useful if only poart of the data should be analyzed (default: -start 0)
+    start (-start)         : frame number from which the analysis is started, useful if only poarts of the data should be analyzed (default: -start 0)
     
-    limit (-limit)         : frame number up to which the analysis is performed, useful if only part of the data should be analyzed (default: '-limit -1' for no limit)
+    limit (-limit)         : frame number up to which the analysis is performed, useful if only parts of the data should be analyzed (default: '-limit -1' for no limit)
     
     remove (-r)            : removes neurons from spike matrix. Enter it as a list, e.g.: '-r 2,3,4' (default: None)
 
     store_iterations (-store_iterations)    :   stores the result of each iteration 
 
-    warm_start (-warm_start_file and -warm_start_dataset)   :   name of the .h5 file and dataset that contain values for the ensembles and spikes that should be used for initialization 
+    warm_start (-warm_start_file and -warm_start_group)   :   name of the .h5 file and group within this file that contain values for the ensembles' activations that should be used for initialization 
     
+
     Optional parameters for sorting
     ------------
     
-    initializations (-init) : number of random initializations, for each trail the same set of parameters is used. If '-init 1' the sorting and non-parametric significance tests are not performed (default: '-init 5')
+    initializations (-init) : number of random initializations, for each trail the same set of parameters is used. If '-init 1' the sorting and non-parametric threshold estimation tests are not performed (default: -init 5)
     
     only_sort (-only_sort)  : in case the ensembles have already been learned and only the sorting shall be performed (default: None) 
                             (NOTE: the parameter '-f folder' hereby denotes the name of the folder that contains the already learned ensembles,
-                            folder MUST contain: '/Ensembles' and '/Ensembles_Random'
+                            folder MUST contain: '/Ensembles' and '/Ensembles_random'
                             
     members (-m)            : number of representatives of an ensemble that have to be similar to keep the ensemble as real ensemble (default: -m 2)
     
@@ -119,7 +116,7 @@ if __name__ == "__main__":
     
     parser.add_argument('-store_iterations', '--store-iterations', action="store_true", help="store results of every iteration")
     parser.add_argument('-warm_start_file', '--warm-start-file', help="start with initial values for ensembles and spikes loaded from this .h5 file")
-    parser.add_argument('-warm_start_dataset', '--warm-start-dataset', help="dataset name within the warm-start-file that contains the ensembles and spikes to start from")
+    parser.add_argument('-warm_start_group', '--warm-start-group', help="group within the warm-start-file that contains the (ensembles and) spikes to start from")
 
     args = parser.parse_args()
     
@@ -167,9 +164,8 @@ if __name__ == "__main__":
                         args.ensemble_penalty,\
                         args.limit,args.start,args.remove,\
                         args.initializations,args.store_iterations,\
-                        args.warm_start_file,args.warm_start_dataset)
+                        args.warm_start_file,args.warm_start_group,args.quiet)
                         
-        picture(nfolder,args.quiet)
         print('learning ensembles on real data is done                 \n')
     
         # searching for random ensembles if stated so 
@@ -187,9 +183,8 @@ if __name__ == "__main__":
                             args.ensemble_penalty,\
                             args.limit,args.start,args.remove,\
                             args.initializations,args.store_iterations,\
-                            None,None)
+                            None,None,args.quiet)
                             
-            picture(nfolder,args.quiet)
             print('learning ensembles on random data is done            \n')
     
     # will store the final motifs in destination

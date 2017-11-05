@@ -37,10 +37,10 @@ def plot_spikes(data, title, ylabel):
             skip = 100
         a.set_yticks(np.arange(ystart, data.shape[0] + ystart + skip, skip), minor=False)
 
-    if data.shape[0] < 200:
-        a.set_yticks(np.arange(ystart, data.shape[0] + ystart), minor=True)
+    #if data.shape[0] < 200:
+    #    a.set_yticks(np.arange(ystart, data.shape[0] + ystart), minor=True)
 
-    a.grid(True, axis='y', linestyle='-', which='minor')
+    #a.grid(True, axis='y', linestyle='-', which='minor')
     a.set_xlim(0, data.shape[1])
     a.set_ylim(0, data.shape[0])
 

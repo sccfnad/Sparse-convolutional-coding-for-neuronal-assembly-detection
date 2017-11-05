@@ -177,9 +177,8 @@ class EnsembleLearner(object):
                     tmp[:,1:] = ensemble[:,:-1]
                     ensemble = tmp    
                     pos_counter += 1
-                    print('pos',pos_counter)
+                    
                 counter += 1
-            print('c',counter)
                 
             norm = np.linalg.norm(ensemble)
             if norm > 0:
@@ -228,7 +227,7 @@ class EnsembleLearnerLASSO(EnsembleLearner):
 
         res = self.unravel_ensembles(lasso.coef_)
         # uncomment to use centering of the ensembles at the center of mass
-        # res = self.unravel_ensembles_cm(lasso.coef_)
+        #res = self.unravel_ensembles_cm(lasso.coef_)
             
         return res
         

@@ -1,6 +1,8 @@
 from .spikes import SpikeLeanerPursuit
 from .ensembles import EnsembleLearnerLASSO
 
+import Plotting as plot
+
 import sys, re, os
 import h5py as h5
 import numpy as np
@@ -14,11 +16,12 @@ def rewrite(lines):
     for _ in range(lines):
         sys.stdout.write("\x1b[A")
         sys.stdout.write(re.sub(r"[^\s]", " ", ""))
+
     
 def convolution(dataset,folder,dataset_name,file_name, swap_axes,\
                 n_ensembles,iterations,lag,ensemble_penalty,\
                 limit,start,remove,initializations,store_iterations,\
-                warm_start_file,warm_start_dataset):
+                warm_start_file,warm_start_group,quiet=False):
     ''' 
     This function solves the optimization problem 
     :math:`\min_{\mathbf{a}, \mathbf{s}} \left\| \mathbf{Y} - \sum_i^l \mathbf{s}_i \circledast \mathbf{a}_i \right\|_F^2 + \alpha \sum_i^{l} \|\mathbf{s}_i\|_0 + \beta \sum_i^l \| \mathbf{a}_i \|_1`
@@ -53,7 +56,7 @@ def convolution(dataset,folder,dataset_name,file_name, swap_axes,\
 
     store_iterations    :   stores the result of each iteration 
 
-    warm_start_file and warm_start_dataset   :   name of the .h5 file and dataset that contain values for the ensembles and spikes that should be used for initialization 
+    warm_start_file and warm_start_group   :   name of the .h5 file and the group within this file that contain values for the (ensembles and) spikes that should be used for initialization 
     
     Output
     -----------
@@ -112,7 +115,7 @@ def convolution(dataset,folder,dataset_name,file_name, swap_axes,\
     print("\n\nThe data to be analysed consists of %d neurons observed over %d time frames. \nIf this is not correct, use the -swap option to transpose the inserted matrix.\n\n" % (n_neurons,n_frames))
     print("--- finding", n_ensembles,"ensembles with length", lag,"in", file_name,"\b.h5 --- \n(for more information see log.txt) \n\n\n\n\n\n\n")
     for init in range(initializations):
-        rewrite(5)
+        rewrite(6)
         
         print( "initialization %02d/%02d" % (init+1, initializations))
         
@@ -128,8 +131,14 @@ def convolution(dataset,folder,dataset_name,file_name, swap_axes,\
         if warm_start_file:
             print('warm_start',warm_start_file)
             fw = h5.File(warm_start_file+'.h5', 'r')
-            grp = fw[warm_start_dataset]
-            ensembles = grp["ensembles"][:]
+            grp = fw[warm_start_group]
+            # the algorithm starts with learning the ensembles upon the given activations
+            # therefore it is not necessary to provide initial ensembles, as they 
+            # would be replaced immediately anyways.
+            # If you would like to provide the ensembles and learn the 
+            # activations first, instead, umcomment the following line and 
+            # swap the two lines with "learner_ensembles.learn" and "learner_spikes.learn".
+            #ensembles = grp["ensembles"][:]
             spikes = grp["activations"][:]
             fw.close()
 
@@ -167,6 +176,9 @@ def convolution(dataset,folder,dataset_name,file_name, swap_axes,\
         resgrp.create_dataset("activations", data=spikes)
         resgrp.create_dataset("ensembles", data=ensembles)
         fout.close()
+        if not quiet:
+            print('      Generating picture...')
+            plot.plot_ensembles(name_of_init)
     
     fh = open(txt, "a")
     fh.write("--- finished --- ")

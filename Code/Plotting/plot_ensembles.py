@@ -75,18 +75,27 @@ def plot_ensembles(path, dataset = 'result/ensembles', naming=""):
 
     #mtx[np.where(mtx > 0.05)] = 1
     #mtx[np.where(mtx > 0.2)] = 1
-
+    
+    if n_lag < 2:
+        width = n_ensembles 
+    else:
+        width = n_ensembles * 8. * n_lag / 10.
+    if n_neurons < 70:
+        height = 10
+    else:
+        height = n_neurons / 10 * 1.5
     params = {
-        'axes.labelsize': 30,
-        'font.size': 30,
-        'legend.fontsize': 30,
+        'axes.labelsize': 50,
+        'font.size': 50,
+        'legend.fontsize': 50,
         'xtick.labelsize': 30,
         'ytick.labelsize': 30,
         "text.usetex": False,
-        'figure.figsize': [12, 8]
+        'figure.figsize': [width, height]
         }
         
     plt.rcParams.update(params)
+    
     fig = plt.figure()
     gs = gridspec.GridSpec(1, n_ensembles)
 
@@ -97,16 +106,23 @@ def plot_ensembles(path, dataset = 'result/ensembles', naming=""):
         ax = fig.add_subplot(gs[i_ensemble])
 
         if i_ensemble == 0:
-            ax.set_xlabel("frame")
             ax.set_ylabel("neuron")
-
+        ax.set_xlabel("frame")
+            
         cbar = ax.pcolor(mtx[:, i_ensemble, :], vmin=vmin, vmax=vmax, cmap=plt.cm.Blues)
 
         ax.set_ylim(0, mtx.shape[0])
         ax.set_xlim(0, mtx.shape[2])
 
-
-        ax.set_yticks(np.arange(0, mtx.shape[0]+1, 5), minor=False)
+        if n_neurons <= 20:
+            if n_neurons <= 10:
+                ax.set_yticks(np.arange(0, mtx.shape[0]+1, 1)+0.5, minor=False) 
+            else:
+                ax.set_yticks(np.arange(0, mtx.shape[0]+1, 5), minor=False)
+        else:
+            ax.set_yticks(np.arange(0, mtx.shape[0]+1, 10), minor=False)
+#       
+#       
 #        ax.set_yticklabels(all_neurons)
 
 #        active_neurons = np.unique(np.where(mtx[:, i_ensemble, :] > 0)[0])
@@ -114,18 +130,28 @@ def plot_ensembles(path, dataset = 'result/ensembles', naming=""):
 #            lbl.set_color(color_list[neurons_color[1]])              #anstatt 0 mal i gestanden
 #            if i in active_neurons:
 #                lbl.set_fontweight('heavy')
-
-        ax.set_xticks(np.arange(mtx.shape[2]) + 0.5)
-        ax.set_xticklabels(np.arange(mtx.shape[2]) + 1)
+        if n_lag > 10:
+            if n_lag > 20:
+                if n_lag > 50:
+                    ax.set_xticks(np.arange(0,mtx.shape[2],10) + 0.5)
+                    ax.set_xticklabels(np.arange(0,mtx.shape[2],10) + 1)
+                else:
+                    ax.set_xticks(np.arange(0,mtx.shape[2],5) + 0.5)
+                    ax.set_xticklabels(np.arange(0,mtx.shape[2],5) + 1)
+            else:
+                ax.set_xticks(np.arange(0,mtx.shape[2],2) + 0.5)
+                ax.set_xticklabels(np.arange(0,mtx.shape[2],2) + 1)    
+        else:
+            ax.set_xticks(np.arange(mtx.shape[2]) + 0.5)
+            ax.set_xticklabels(np.arange(mtx.shape[2]) + 1)
 
 #        ax.set_yticks(np.arange(0, mtx.shape[0], 5), minor=True)
 #        #ax.grid(True, linestyle='-', lw=2, which='minor', axis='y')
 
-        ax.set_title("motif %d" % (nonempty_ensembles[i_ensemble] + 1), color=color_list[i_ensemble])
+        ax.set_title("motif %d" % (nonempty_ensembles[i_ensemble] + 1))
 
     fig.colorbar(cbar)
 
-    fig.set_size_inches(30, 20)
     fig.savefig(path+naming+'.png', bbox_inches='tight')
 
     plt.close()
